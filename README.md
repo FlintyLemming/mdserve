@@ -93,6 +93,26 @@ mdserve README.md --hostname 0.0.0.0 --port 8080
 - Watches for new markdown files added to the directory
 - Only monitors the immediate directory (non-recursive)
 
+## Docker
+
+Build the image (builds the binary inside the container):
+
+```bash
+docker build -t mdserve .
+```
+
+Serve a single Markdown file (file-only mode):
+
+```bash
+docker run --rm -p 8080:8080 -v /path/to/file.md:/data/file.md mdserve /data/file.md
+```
+
+Optional port override:
+
+```bash
+docker run --rm -e MDSERVE_PORT=9000 -p 9000:9000 -v /path/to/file.md:/data/file.md mdserve /data/file.md
+```
+
 
 ## Endpoints
 
