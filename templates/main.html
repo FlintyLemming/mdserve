@@ -408,6 +408,33 @@
             padding: 16px;
             overflow: auto;
         }
+        .code-block {
+            position: relative;
+        }
+        .code-block pre {
+            padding-top: 32px;
+        }
+        .copy-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            border: 1px solid var(--border-color-light);
+            background: var(--code-bg);
+            color: inherit;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+        .copy-button:hover {
+            opacity: 1;
+            border-color: var(--link-color);
+        }
+        .copy-button.copied {
+            color: var(--link-color);
+            border-color: var(--link-color);
+        }
         code {
             background-color: var(--code-bg);
             padding: 2px 4px;
@@ -600,6 +627,57 @@
             }
         }
 
+        function addCopyButtons() {
+            const codeBlocks = document.querySelectorAll('pre > code');
+
+            codeBlocks.forEach((codeElement) => {
+                const preElement = codeElement.parentElement;
+                if (!preElement || preElement.dataset.copyReady === 'true') {
+                    return;
+                }
+
+                preElement.dataset.copyReady = 'true';
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'code-block';
+                preElement.parentElement.insertBefore(wrapper, preElement);
+                wrapper.appendChild(preElement);
+
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'copy-button';
+                button.setAttribute('aria-label', 'Copy code');
+                button.textContent = 'Copy';
+
+                button.addEventListener('click', async () => {
+                    const text = codeElement.textContent.replace(/\n+$/, '');
+
+                    try {
+                        await navigator.clipboard.writeText(text);
+                    } catch (error) {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = text;
+                        textarea.setAttribute('readonly', '');
+                        textarea.style.position = 'absolute';
+                        textarea.style.left = '-9999px';
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                    }
+
+                    button.textContent = 'Copied';
+                    button.classList.add('copied');
+                    setTimeout(() => {
+                        button.textContent = 'Copy';
+                        button.classList.remove('copied');
+                    }, 1500);
+                });
+
+                wrapper.appendChild(button);
+            });
+        }
+
         // Auto-refresh functionality using WebSocket
         function setupLiveReload() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -638,6 +716,7 @@
             initTheme();
             initSidebar();
             initMermaid();
+            addCopyButtons();
             setupLiveReload();
 
             // Modal close functionality
